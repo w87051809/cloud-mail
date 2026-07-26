@@ -131,6 +131,15 @@ const settingService = {
 			if (!resendTokens[domain]) delete resendTokens[domain];
 		});
 
+		if (Object.prototype.hasOwnProperty.call(params, 'autoDelete')) {
+			params.autoDelete = Number(params.autoDelete) === 0 ? 0 : 1;
+		}
+
+		if (Object.prototype.hasOwnProperty.call(params, 'autoDeleteDays')) {
+			const days = Number(params.autoDeleteDays);
+			params.autoDeleteDays = Number.isFinite(days) ? Math.min(3650, Math.max(1, Math.trunc(days))) : 30;
+		}
+
 		if (Array.isArray(params.emailPrefixFilter)) {
 			params.emailPrefixFilter = params.emailPrefixFilter + '';
 		}

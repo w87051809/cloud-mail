@@ -51,6 +51,8 @@ export const setting = sqliteTable('setting', {
 	blackContent: text('black_content').default('').notNull(),
 	blackFrom: text('black_from').default('').notNull(),
 	aiCode: integer('ai_code').default(1).notNull(),
-	aiCodeFilter: text('ai_code_filter').default('').notNull()
+	aiCodeFilter: text('ai_code_filter').default('').notNull(),
+	autoDelete: integer('auto_delete').default(1).notNull(),
+	autoDeleteDays: integer('auto_delete_days').default(30).notNull()
 });
 export default setting

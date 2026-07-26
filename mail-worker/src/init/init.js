@@ -29,8 +29,26 @@ const dbInit = {
 		await this.v2_8DB(c);
 		await this.v2_9DB(c);
 		await this.v3_0DB(c);
+		await this.v3_1DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_1DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN auto_delete INTEGER NOT NULL DEFAULT 1;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN auto_delete_days INTEGER NOT NULL DEFAULT 30;`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+
+		try {
+			await c.env.db.prepare(`ALTER TABLE email ADD COLUMN delete_time DATETIME;`).run();
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	async v3_0DB(c) {

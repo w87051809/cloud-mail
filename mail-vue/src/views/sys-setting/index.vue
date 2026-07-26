@@ -158,6 +158,28 @@
                 </div>
               </div>
               <div class="setting-item">
+                <div>
+                  <span>{{ $t('autoDeleteEmail') }}</span>
+                  <el-tooltip effect="dark" :content="$t('autoDeleteEmailDesc')">
+                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                  </el-tooltip>
+                </div>
+                <div class="auto-delete-controls">
+                  <el-input-number
+                      size="small"
+                      v-model="setting.autoDeleteDays"
+                      :min="1"
+                      :max="3650"
+                      :disabled="setting.autoDelete !== 0"
+                      controls-position="right"
+                      @change="change"
+                  />
+                  <span class="auto-delete-unit">{{ $t('autoDeleteDaysUnit') }}</span>
+                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                             v-model="setting.autoDelete"/>
+                </div>
+              </div>
+              <div class="setting-item">
                 <div><span>{{ $t('sendEmail') }}</span></div>
                 <div>
                   <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
@@ -1627,6 +1649,22 @@ function editSetting(settingForm, refreshStatus = true) {
     justify-items: flex-end;
     font-weight: normal;
   }
+}
+
+.auto-delete-controls {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  .el-input-number {
+    width: 112px;
+  }
+}
+
+.auto-delete-unit {
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
 }
 
 .r2domain-item {

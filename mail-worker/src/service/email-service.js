@@ -137,7 +137,7 @@ const emailService = {
 	async delete(c, params, userId) {
 		const { emailIds } = params;
 		const emailIdList = emailIds.split(',').map(Number);
-		await orm(c).update(email).set({ isDel: isDel.DELETE }).where(
+		await orm(c).update(email).set({ isDel: isDel.DELETE, deleteTime: sql`CURRENT_TIMESTAMP` }).where(
 			and(
 				eq(email.userId, userId),
 				inArray(email.emailId, emailIdList)))
@@ -917,7 +917,7 @@ const emailService = {
 	},
 
 	async restoreByUserId(c, userId) {
-		await orm(c).update(email).set({ isDel: isDel.NORMAL }).where(eq(email.userId, userId)).run();
+		await orm(c).update(email).set({ isDel: isDel.NORMAL, deleteTime: null }).where(eq(email.userId, userId)).run();
 	},
 
 	async completeReceive(c, status, emailId) {
@@ -930,6 +930,43 @@ const emailService = {
 	async completeReceiveAll(c) {
 		await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.RECEIVE} WHERE status = ${emailConst.status.SAVING} AND EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
 		await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.NOONE} WHERE status = ${emailConst.status.SAVING} AND NOT EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
+	},
+
+	async autoDeleteExpired(c) {
+		const setting = await settingService.query(c);
+
+		if (setting.autoDelete !== settingConst.autoDelete.OPEN) {
+			return { deleted: 0 };
+		}
+
+		const days = Number(setting.autoDeleteDays);
+		const keepDays = Number.isFinite(days) ? Math.min(3650, Math.max(1, Math.trunc(days))) : 30;
+
+		try {
+			const { results } = await c.env.db.prepare(`
+				SELECT email_id AS emailId
+				FROM email
+				WHERE is_del = ?
+				  AND datetime(COALESCE(delete_time, create_time)) <= datetime('now', ?)
+				ORDER BY email_id
+				LIMIT 100
+			`).bind(isDel.DELETE, `-${keepDays} days`).all();
+
+			const emailIds = results.map(row => row.emailId);
+
+			if (emailIds.length === 0) {
+				return { deleted: 0 };
+			}
+
+			await attService.removeByEmailIds(c, emailIds);
+			await starService.removeByEmailIds(c, emailIds);
+			await orm(c).delete(email).where(inArray(email.emailId, emailIds)).run();
+
+			return { deleted: emailIds.length };
+		} catch (e) {
+			console.warn(`auto delete email skipped: ${e.message}`);
+			return { deleted: 0 };
+		}
 	},
 
 	async batchDelete(c, params) {

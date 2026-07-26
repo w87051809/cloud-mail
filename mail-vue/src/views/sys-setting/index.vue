@@ -412,49 +412,7 @@
             <div class="card-content">
               <div class="concerning-item">
                 <span>{{ $t('version') }} :</span>
-                <el-badge is-dot :hidden="!hasUpdate">
-                  <el-button @click="jump('https://github.com/maillab/cloud-mail/releases')">
-                    {{ currentVersion }}
-                    <template #icon>
-                      <Icon icon="qlementine-icons:version-control-16" style="font-size: 20px" color="#1890FF"/>
-                    </template>
-                  </el-button>
-                </el-badge>
-              </div>
-              <div class="concerning-item">
-                <span>{{ $t('community') }} : </span>
-                <div class="community">
-                  <el-button @click="jump('https://github.com/maillab/cloud-mail')">
-                    Github
-                    <template #icon>
-                      <Icon icon="codicon:github-inverted" width="22" height="22"/>
-                    </template>
-                  </el-button>
-                  <el-button @click="jump('https://t.me/cloud_mail_tg')">
-                    Telegram
-                    <template #icon>
-                      <Icon icon="logos:telegram" width="30" height="30"/>
-                    </template>
-                  </el-button>
-                </div>
-              </div>
-              <div class="concerning-item">
-                <span>{{ $t('support') }} : </span>
-                <el-button @click="jump('https://doc.skymail.ink/support.html')">
-                  {{ t('supportDesc') }}
-                  <template #icon>
-                    <Icon color="#79D6B5" icon="simple-icons:buymeacoffee" width="20" height="20"/>
-                  </template>
-                </el-button>
-              </div>
-              <div class="concerning-item">
-                <span>{{ $t('help') }} : </span>
-                <el-button @click="jump('https://doc.skymail.ink')">
-                  {{ t('document') }}
-                  <template #icon>
-                    <Icon color="#79D6B5" icon="fluent-color:document-32" width="18" height="18"/>
-                  </template>
-                </el-button>
+                <span class="version-text">{{ currentVersion }}</span>
               </div>
             </div>
           </div>
@@ -588,6 +546,9 @@
           <div class="dialog-footer">
             <el-switch v-model="tgBotStatus" :active-value="0" :inactive-value="1" :active-text="$t('enable')"
                        :inactive-text="$t('disable')"/>
+            <el-button :loading="tgTestLoading" @click="testTgBot">
+              {{ $t('testTelegram') }}
+            </el-button>
             <el-button :loading="settingLoading" type="primary" @click="tgBotSave">
               {{ $t('save') }}
             </el-button>
@@ -827,7 +788,7 @@
 
 <script setup>
 import {computed, defineOptions, nextTick, reactive, ref} from "vue";
-import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet} from "@/request/setting.js";
+import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet, testTelegram} from "@/request/setting.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
@@ -841,15 +802,12 @@ import loading from "@/components/loading/index.vue";
 import {getTextWidth} from "@/utils/text.js";
 import {fileToBase64} from "@/utils/file-utils.js"
 import {useI18n} from 'vue-i18n';
-import axios from "axios";
 
 defineOptions({
   name: 'sys-setting'
 })
 
 const currentVersion = 'v3.0.0'
-const hasUpdate = ref(false)
-let getUpdateErrorCount = 1;
 const {t, locale} = useI18n();
 const firstLoading = ref(true)
 const settingReady = ref(false)
@@ -874,6 +832,7 @@ const uiStore = useUiStore();
 const {settings: setting} = storeToRefs(settingStore);
 const editTitle = ref('')
 const settingLoading = ref(false)
+const tgTestLoading = ref(false)
 const clearS3Loading = ref(false)
 const r2DomainInput = ref('')
 const loginOpacity = ref(0)
@@ -959,7 +918,6 @@ const tgMsgTextOption = [{label: t('show'), value: 'show'}, {label: t('hide'), v
 const tgMsgLabelWidth = computed(() => locale.value === 'en' ? '120px' : '100px');
 
 getSettings()
-getUpdate()
 
 function getSettings() {
   settingReady.value = false
@@ -1031,20 +989,6 @@ const resendList = computed(() => {
 
   return list;
 });
-
-function getUpdate() {
-  if (getUpdateErrorCount > 5 || !getUpdateErrorCount) return
-  axios.get('https://api.github.com/repos/maillab/cloud-mail/releases/latest').then(({data}) => {
-    hasUpdate.value = data.name !== currentVersion
-    getUpdateErrorCount = 0
-  }).catch(e => {
-    getUpdateErrorCount++
-    setTimeout(() => {
-      getUpdate()
-    }, 2000)
-    console.error('检查更新失败：', e)
-  })
-}
 
 function saveAddVerifyCount() {
   if (!addVerifyCount.value) {
@@ -1227,6 +1171,34 @@ function tgBotSave() {
   }
   if (tgBotToken.value) form.tgBotToken = tgBotToken.value
   editSetting(form)
+}
+
+function testTgBot() {
+  if (tgTestLoading.value || settingLoading.value) return
+
+  tgTestLoading.value = true
+
+  testTelegram({
+    tgBotToken: tgBotToken.value,
+    tgChatId: tgChatId.value + ''
+  }).then(res => {
+    if (res.failCount) {
+      ElMessage({
+        message: res.errors?.[0]?.message || t('testTelegramFail'),
+        type: "error",
+        plain: true
+      })
+      return
+    }
+
+    ElMessage({
+      message: t('testTelegramSuccess'),
+      type: "success",
+      plain: true
+    })
+  }).finally(() => {
+    tgTestLoading.value = false
+  })
 }
 
 function forwardEmailSave() {
@@ -1476,13 +1448,6 @@ function changeField(key, value) {
 
 function saveTitle() {
   editSetting({title: editTitle.value})
-}
-
-function jump(href) {
-  const doc = document.createElement('a')
-  doc.href = href
-  doc.target = '_blank'
-  doc.click()
 }
 
 function editSetting(settingForm, refreshStatus = true) {
@@ -1962,25 +1927,20 @@ function editSetting(settingForm, refreshStatus = true) {
 .concerning-item {
   display: flex;
   align-items: center;
+  gap: 12px;
 
-  .community {
-    display: flex;
-    row-gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  :deep(.el-button) {
-    padding: 0 10px;
-    font-weight: normal;
-
-    i {
-      font-size: 22px;
-    }
+  .version-text {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--el-text-color-primary);
   }
 
   > span:first-child {
     font-weight: normal;
-    padding-right: 20px;
     white-space: nowrap;
   }
 }

@@ -1,10 +1,24 @@
-name = "cloud-mail"
+name = "mail-worker"
 main = "src/index.js"
 compatibility_date = "2025-06-04"
 keep_vars = true
+workers_dev = true
+
+[[routes]]
+pattern = "mail.1089.ltd"
+custom_domain = true
 
 [observability]
 enabled = true
+
+[[d1_databases]]
+binding = "db"
+database_name = "cloud-mail"
+database_id = "ecdd86c4-b226-4f39-9037-3b1b909ce8aa"
+
+[[kv_namespaces]]
+binding = "kv"
+id = "f2d6e56eb6a64720b4d09d212c1f6ad0"
 
 #[[d1_databases]]
 #binding = "db"			#d1数据库绑定名默认不可修改

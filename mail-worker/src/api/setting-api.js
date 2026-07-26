@@ -1,6 +1,7 @@
 import app from '../hono/hono';
 import result from '../model/result';
 import settingService from '../service/setting-service';
+import telegramService from '../service/telegram-service';
 import userContext from "../security/user-context";
 
 app.put('/setting/set', async (c) => {
@@ -33,3 +34,7 @@ app.put('/setting/setBlacklist', async (c) => {
 	return c.json(result.ok(setting));
 })
 
+app.post('/setting/testTelegram', async (c) => {
+	const data = await telegramService.testBot(c, await c.req.json());
+	return c.json(result.ok(data));
+})

@@ -7,17 +7,16 @@ import userService from '../service/user-service';
 import permService from '../service/perm-service';
 import { t } from '../i18n/i18n'
 import app from '../hono/hono';
+import { assertSameOrigin, getSessionJwt } from './session';
 
 const exclude = [
 	'/login',
 	'/register',
-	'/oss',
 	'/setting/websiteConfig',
 	'/webhooks',
 	'/init',
 	'/public/genToken',
 	'/telegram',
-	'/test',
 	'/oauth'
 ];
 
@@ -95,7 +94,7 @@ app.use('*', async (c, next) => {
 	const path = c.req.path;
 
 	const index = exclude.findIndex(item => {
-		return path.startsWith(item);
+		return path === item || path.startsWith(item + '/');
 	});
 
 	if (index > -1) {
@@ -113,7 +112,7 @@ app.use('*', async (c, next) => {
 	}
 
 
-	const jwt = c.req.header(constant.TOKEN_HEADER);
+	const jwt = getSessionJwt(c);
 
 	const result = await jwtUtils.verifyToken(c, jwt);
 
@@ -132,8 +131,10 @@ app.use('*', async (c, next) => {
 		throw new BizError(t('authExpired'), 401);
 	}
 
+	assertSameOrigin(c);
+
 	const permIndex = requirePerms.findIndex(item => {
-		return path.startsWith(item);
+		return path === item || path.startsWith(item + '/');
 	});
 
 	if (permIndex > -1) {
@@ -143,7 +144,7 @@ app.use('*', async (c, next) => {
 		const userPaths = permKeyToPaths(permKeys);
 
 		const userPermIndex = userPaths.findIndex(item => {
-			return path.startsWith(item);
+			return path === item || path.startsWith(item + '/');
 		});
 
 		if (userPermIndex === -1 && authInfo.user.email !== c.env.admin) {

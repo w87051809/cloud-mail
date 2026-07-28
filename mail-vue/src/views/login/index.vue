@@ -1,13 +1,6 @@
 <template>
-  <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中...">
-    <div id="background-wrap" v-if="!settingStore.settings.background">
-      <div class="x1 cloud"></div>
-      <div class="x2 cloud"></div>
-      <div class="x3 cloud"></div>
-      <div class="x4 cloud"></div>
-      <div class="x5 cloud"></div>
-    </div>
-    <div v-else :style="background"></div>
+  <div id="login-box" v-loading="oauthLoading" element-loading-text="登录中...">
+    <div id="background-wrap" :class="{ 'default-cover': !settingStore.settings.background }" :style="background"></div>
     <div class="form-wrapper">
       <div class="container">
         <span class="form-title">{{ settingStore.settings.title }}</span>
@@ -162,7 +155,7 @@ import {cvtR2Url} from "@/utils/convert.js";
 import {loginUserInfo} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import {useI18n} from "vue-i18n";
-import {oauthBindUser, oauthLinuxDoLogin} from "@/request/ouath.js";
+import {oauthBindUser, oauthGetState, oauthLinuxDoLogin} from "@/request/ouath.js";
 
 const {t} = useI18n();
 const accountStore = useAccountStore();
@@ -177,7 +170,7 @@ const show = ref('login')
 
 const bindForm = reactive({
   email: '',
-  oauthUserId: '',
+  bindToken: '',
   code: ''
 })
 
@@ -240,13 +233,17 @@ const loginOpacity = computed(() => {
 const hideLoginDomain = computed(() => settingStore.settings.loginDomain === 1)
 
 const background = computed(() => {
+  const customBackground = settingStore.settings.background
+  const image = customBackground
+      ? cvtR2Url(settingStore.settings.background)
+      : '/image/mail-home-cover.svg?v=1089-cn-20260728'
 
-  return settingStore.settings.background ? {
-    'background-image': `url(${cvtR2Url(settingStore.settings.background)})`,
+  return {
+    'background-image': `url(${image})`,
     'background-repeat': 'no-repeat',
     'background-size': 'cover',
-    'background-position': 'center'
-  } : ''
+    'background-position': customBackground ? 'center' : 'left center'
+  }
 })
 
 const openSelect = () => {
@@ -261,11 +258,12 @@ const getEmailName = (email) => {
   return email.split('@')[0]
 }
 
-function linuxDoLogin() {
+async function linuxDoLogin() {
   const clientId = settingStore.settings.linuxdoClientId
   const redirectUri = encodeURIComponent(settingStore.settings.linuxdoCallbackUrl)
+  const { state } = await oauthGetState()
   window.location.href =
-      `https://connect.linux.do/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile+email`
+      `https://connect.linux.do/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile+email&state=${encodeURIComponent(state)}`
 }
 
 linuxDoGetUser();
@@ -274,15 +272,16 @@ async function linuxDoGetUser() {
 
   const params = new URLSearchParams(window.location.search)
   const code = params.get('code')
+  const state = params.get('state')
 
-  if (code) {
+  if (code && state) {
 
     oauthLoading.value = true
-    oauthLinuxDoLogin(code).then(data => {
+    oauthLinuxDoLogin(code, state).then(data => {
 
-      bindForm.oauthUserId = data.userInfo.oauthUserId;
+      bindForm.bindToken = data.bindToken;
 
-      if (!data.token) {
+      if (!data.authenticated) {
         showBindForm.value = true
         oauthLoading.value = false
         ElMessage({
@@ -294,7 +293,7 @@ async function linuxDoGetUser() {
         return;
       }
 
-      saveToken(data.token);
+      finishLogin();
     }).catch(() => {
       oauthLoading.value = false
     })
@@ -351,11 +350,11 @@ function bind() {
 
   }
 
-  const form = {email, oauthUserId: bindForm.oauthUserId, code: bindForm.code}
+  const form = {email, bindToken: bindForm.bindToken, code: bindForm.code}
 
   bindLoading.value = true
   oauthBindUser(form).then(data => {
-    saveToken(data.token)
+    if (data.authenticated) finishLogin()
   }).catch(() => {
     bindLoading.value = false
   })
@@ -394,14 +393,14 @@ const submit = () => {
 
   loginLoading.value = true
   login(email, form.password).then(async data => {
-    await saveToken(data.token)
+    if (data.authenticated) await finishLogin()
   }).finally(() => {
     loginLoading.value = false
   })
 }
 
-async function saveToken(token) {
-  localStorage.setItem('token', token)
+async function finishLogin() {
+  localStorage.removeItem('token')
   refreshWebsiteConfig()
   const user = await loginUserInfo();
   accountStore.currentAccountId = user.account.accountId;
@@ -473,7 +472,7 @@ function submitRegister() {
     return
   }
 
-  if (registerForm.password.length < 6) {
+  if (registerForm.password.length < 10) {
     ElMessage({
       message: t('pwdLengthMsg'),
       type: 'error',
@@ -755,7 +754,7 @@ function submitRegister() {
 
 
 #login-box {
-  background: linear-gradient(to bottom, #2980b9, #6dd5fa, #fff);
+  background: #eef5f4;
   font: 100% Arial, sans-serif;
   height: 100%;
   margin: 0;
@@ -767,76 +766,15 @@ function submitRegister() {
 
 
 #background-wrap {
+  width: 100%;
   height: 100%;
   z-index: 0;
-}
 
-@keyframes animateCloud {
-  0% {
-    margin-left: -500px;
+  &.default-cover {
+    @media (max-width: 767px) {
+      background-position: 50% center !important;
+    }
   }
-
-  100% {
-    margin-left: 100%;
-  }
-}
-
-.x1 {
-  animation: animateCloud 30s linear infinite;
-  transform: scale(0.65);
-}
-
-.x2 {
-  animation: animateCloud 15s linear infinite;
-  transform: scale(0.3);
-}
-
-.x3 {
-  animation: animateCloud 25s linear infinite;
-  transform: scale(0.5);
-}
-
-.x4 {
-  animation: animateCloud 13s linear infinite;
-  transform: scale(0.4);
-}
-
-.x5 {
-  animation: animateCloud 20s linear infinite;
-  transform: scale(0.55);
-}
-
-.cloud {
-  background: linear-gradient(to bottom, #fff 5%, #f1f1f1 100%);
-  border-radius: 100px;
-  box-shadow: 0 8px 5px rgba(0, 0, 0, 0.1);
-  height: 120px;
-  width: 350px;
-  position: relative;
-}
-
-.cloud:after,
-.cloud:before {
-  content: "";
-  position: absolute;
-  background: #fff;
-  z-index: -1;
-}
-
-.cloud:after {
-  border-radius: 100px;
-  height: 100px;
-  left: 50px;
-  top: -50px;
-  width: 100px;
-}
-
-.cloud:before {
-  border-radius: 200px;
-  height: 180px;
-  width: 180px;
-  right: 50px;
-  top: -90px;
 }
 
 </style>

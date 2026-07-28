@@ -58,11 +58,19 @@ const userService = {
 
 		const { password } = params;
 
-		if (password.length < 6) {
+		if (password.length < 10) {
 			throw new BizError(t('pwdMinLength'));
+		}
+		if (password.length > 128) {
+			throw new BizError(t('pwdLengthLimit'));
 		}
 		const { salt, hash } = await cryptoUtils.hashPassword(password);
 		await orm(c).update(user).set({ password: hash, salt: salt }).where(eq(user.userId, userId)).run();
+		await c.env.kv.delete(KvConst.AUTH_INFO + userId);
+	},
+
+	async updatePasswordHash(c, userId, { salt, hash }) {
+		await orm(c).update(user).set({ password: hash, salt }).where(eq(user.userId, userId)).run();
 	},
 
 	selectByEmail(c, email) {
@@ -310,8 +318,11 @@ const userService = {
 			throw new BizError(t('notEmailDomain'));
 		}
 
-		if (password.length < 6) {
+		if (password.length < 10) {
 			throw new BizError(t('pwdMinLength'));
+		}
+		if (password.length > 128) {
+			throw new BizError(t('pwdLengthLimit'));
 		}
 
 		const accountRow = await accountService.selectByEmailIncludeDel(c, email);

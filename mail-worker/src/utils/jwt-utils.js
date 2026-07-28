@@ -1,3 +1,5 @@
+import constant from '../const/constant';
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -48,6 +50,7 @@ const jwtUtils = {
 
 	async verifyToken(c, token) {
 		try {
+			if (typeof token !== 'string') return null;
 			const [headerB64, payloadB64, signatureB64] = token.split('.');
 
 			if (!headerB64 || !payloadB64 || !signatureB64) return null;
@@ -74,7 +77,8 @@ const jwtUtils = {
 			const payload = JSON.parse(payloadJson);
 
 			const now = Math.floor(Date.now() / 1000);
-			if (payload.exp && payload.exp < now) return null;
+			if (!Number.isFinite(payload.iat) || payload.iat < constant.TOKEN_VALID_AFTER) return null;
+			if (payload.exp && payload.exp <= now) return null;
 
 			return payload;
 

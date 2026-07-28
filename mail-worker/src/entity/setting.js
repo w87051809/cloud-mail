@@ -1,13 +1,13 @@
 import { sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
 export const setting = sqliteTable('setting', {
-	register: integer('register').default(0).notNull(),
+	register: integer('register').default(1).notNull(),
 	receive: integer('receive').default(0).notNull(),
 	title: text('title').default('').notNull(),
 	manyEmail: integer('many_email').default(0).notNull(),
 	addEmail: integer('add_email').default(0).notNull(),
 	autoRefresh: integer('auto_refresh').default(0).notNull(),
 	addEmailVerify: integer('add_email_verify').default(1).notNull(),
-	registerVerify: integer('register_verify').default(1).notNull(),
+	registerVerify: integer('register_verify').default(0).notNull(),
 	regVerifyCount: integer('reg_verify_count').default(1).notNull(),
 	addVerifyCount: integer('add_verify_count').default(1).notNull(),
 	send: integer('send').default(1).notNull(),

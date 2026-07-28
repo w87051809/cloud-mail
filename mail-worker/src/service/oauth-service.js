@@ -5,14 +5,23 @@ import { eq, inArray } from 'drizzle-orm';
 import userService from "./user-service";
 import loginService from "./login-service";
 import cryptoUtils from "../utils/crypto-utils";
+import jwtUtils from '../utils/jwt-utils';
 
 const oauthService = {
 
 	async bindUser(c, params) {
 
-		const { email, oauthUserId, code } = params;
+		const { email, bindToken, code } = params;
+		const bindPayload = await jwtUtils.verifyToken(c, bindToken);
+		if (!bindPayload || bindPayload.purpose !== 'oauth-bind' || !bindPayload.oauthUserId) {
+			throw new BizError('绑定凭据已失效，请重新登录', 403);
+		}
+		const oauthUserId = bindPayload.oauthUserId;
 
 		const oauthRow = await this.getById(c, oauthUserId);
+		if (!oauthRow) {
+			throw new BizError('绑定用户不存在，请重新登录', 403);
+		}
 
 		let userRow = await userService.selectByIdIncludeDel(c, oauthRow.userId);
 
@@ -24,7 +33,7 @@ const oauthService = {
 
 		userRow = await userService.selectByEmail(c, email);
 
-		orm(c).update(oauth).set({ userId: userRow.userId }).where(eq(oauth.oauthUserId, oauthUserId)).run();
+		await orm(c).update(oauth).set({ userId: userRow.userId }).where(eq(oauth.oauthUserId, oauthUserId)).run();
 		const jwtToken = await loginService.login(c, { email, password: null }, true);
 
 		return { userInfo: oauthRow, token: jwtToken}
@@ -78,7 +87,11 @@ const oauthService = {
 		const userRow = await userService.selectByIdIncludeDel(c, oauthRow.userId);
 
 		if (!userRow) {
-			return { userInfo: oauthRow, token: null }
+			const bindToken = await jwtUtils.generateToken(c, {
+				purpose: 'oauth-bind',
+				oauthUserId: oauthRow.oauthUserId
+			}, 600);
+			return { userInfo: oauthRow, token: null, bindToken }
 		}
 
 		const JwtToken = await loginService.login(c, { email: userRow.email, password: null }, true);

@@ -19,6 +19,10 @@ import dayjs from 'dayjs';
 import { toUtc } from '../utils/date-uitil';
 import { t } from '../i18n/i18n.js';
 import verifyRecordService from './verify-record-service';
+import authRateLimiter from '../security/auth-rate-limiter';
+
+const DUMMY_PASSWORD_SALT = 'bWFpbC1sb2dpbi1kdW1teSE=';
+const DUMMY_PASSWORD_HASH = 'pbkdf2-sha256$210000$bZjQawHvvC0OnutFqvysGUySaicoLmAwOXCU04XUt2Y=';
 
 const loginService = {
 
@@ -36,6 +40,7 @@ const loginService = {
 		if (register === settingConst.register.CLOSE) {
 			throw new BizError(t('regDisabled'));
 		}
+		if (!oauth) await authRateLimiter.consumeRegistration(c);
 
 		if (!verifyUtils.isEmail(email)) {
 			throw new BizError(t('notEmail'));
@@ -53,11 +58,11 @@ const loginService = {
 			throw new BizError(t('emailLengthLimit'));
 		}
 
-		if (password.length > 30) {
+		if (password.length > 128) {
 			throw new BizError(t('pwdLengthLimit'));
 		}
 
-		if (password.length < 6) {
+		if (password.length < 10) {
 			throw new BizError(t('pwdMinLength'));
 		}
 
@@ -207,42 +212,61 @@ const loginService = {
 			throw new BizError(t('emailAndPwdEmpty'));
 		}
 
+		if (!noVerifyPwd) await authRateLimiter.assertLoginAllowed(c, email);
 		const userRow = await userService.selectByEmailIncludeDel(c, email);
 
-		if (!userRow) {
-			throw new BizError(t('notExistUser'));
-		}
+		if (!noVerifyPwd) {
+			const validUser = userRow
+				&& userRow.isDel !== isDel.DELETE
+				&& userRow.status !== userConst.status.BAN;
+			const validPassword = await cryptoUtils.verifyPassword(
+				password,
+				validUser ? userRow.salt : DUMMY_PASSWORD_SALT,
+				validUser ? userRow.password : DUMMY_PASSWORD_HASH
+			);
 
-		if(userRow.isDel === isDel.DELETE) {
-			throw new BizError(t('isDelUser'));
-		}
+			if (!validUser || !validPassword) {
+				await authRateLimiter.recordLoginFailure(c, email);
+				throw new BizError(t('authFailed'), 401);
+			}
 
-		if(userRow.status === userConst.status.BAN) {
-			throw new BizError(t('isBanUser'));
-		}
-
-		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password) && !noVerifyPwd) {
-			throw new BizError(t('IncorrectPwd'));
+			await authRateLimiter.clearLoginFailures(c, email);
+			if (cryptoUtils.needsPasswordUpgrade(userRow.password)) {
+				const upgraded = await cryptoUtils.hashPassword(password);
+				await userService.updatePasswordHash(c, userRow.userId, upgraded);
+				userRow.password = upgraded.hash;
+				userRow.salt = upgraded.salt;
+			}
+		} else if (!userRow || userRow.isDel === isDel.DELETE || userRow.status === userConst.status.BAN) {
+			throw new BizError(t('authFailed'), 401);
 		}
 
 		const uuid = uuidv4();
-		const jwt = await JwtUtils.generateToken(c,{ userId: userRow.userId, token: uuid });
+		const jwt = await JwtUtils.generateToken(
+			c,
+			{ userId: userRow.userId, token: uuid },
+			constant.TOKEN_EXPIRE
+		);
+		const authUser = { ...userRow };
+		delete authUser.password;
+		delete authUser.salt;
 
 		let authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userRow.userId, { type: 'json' });
 
 		if (authInfo && (authInfo.user.email === userRow.email)) {
 
-			if (authInfo.tokens.length > 10) {
+			if (authInfo.tokens.length >= 10) {
 				authInfo.tokens.shift();
 			}
 
 			authInfo.tokens.push(uuid);
+			authInfo.user = authUser;
 
 		} else {
 
 			authInfo = {
 				tokens: [],
-				user: userRow,
+				user: authUser,
 				refreshTime: dayjs().toISOString()
 			};
 
@@ -257,11 +281,21 @@ const loginService = {
 	},
 
 	async logout(c, userId) {
-		const token =userContext.getToken(c);
+		const token = await userContext.getToken(c);
 		const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
-		const index = authInfo.tokens.findIndex(item => item === token);
-		authInfo.tokens.splice(index, 1);
-		await c.env.kv.put(KvConst.AUTH_INFO + userId, JSON.stringify(authInfo));
+		if (!authInfo || !token) return;
+
+		authInfo.tokens = authInfo.tokens.filter(item => item !== token);
+		if (authInfo.tokens.length === 0) {
+			await c.env.kv.delete(KvConst.AUTH_INFO + userId);
+			return;
+		}
+
+		await c.env.kv.put(
+			KvConst.AUTH_INFO + userId,
+			JSON.stringify(authInfo),
+			{ expirationTtl: constant.TOKEN_EXPIRE }
+		);
 	}
 
 };

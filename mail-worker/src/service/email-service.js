@@ -6,6 +6,7 @@ import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
 import BizError from '../error/biz-error';
+import { sanitizeEmailHtml } from '../security/email-sanitizer';
 import emailUtils from '../utils/email-utils';
 import fileUtils from '../utils/file-utils';
 import { Resend } from 'resend';
@@ -145,7 +146,7 @@ const emailService = {
 	},
 
 	receive(c, params, cidAttList, r2domain) {
-		params.content = this.imgReplace(params.content, cidAttList, r2domain)
+		params.content = sanitizeEmailHtml(this.imgReplace(params.content, cidAttList, r2domain))
 		return orm(c).insert(email).values({ ...params }).returning().get();
 	},
 
@@ -750,6 +751,10 @@ const emailService = {
 			status: status,
 			message: message
 		}).where(eq(email.resendEmailId, resendEmailId)).returning().get();
+	},
+
+	selectByResendEmailId(c, resendEmailId) {
+		return orm(c).select().from(email).where(eq(email.resendEmailId, resendEmailId)).get();
 	},
 
 	async selectUserEmailCountList(c, userIds, type, del = isDel.NORMAL) {

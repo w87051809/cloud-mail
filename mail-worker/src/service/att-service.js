@@ -47,6 +47,13 @@ const attService = {
 		).all();
 	},
 
+	getAccessibleKey(c, key, userId, isAdmin = false) {
+		const condition = isAdmin
+			? eq(att.key, key)
+			: and(eq(att.key, key), eq(att.userId, userId));
+		return orm(c).select().from(att).where(condition).get();
+	},
+
 	async toImageUrlHtml(c, content) {
 
 		const { r2Domain } = await settingService.query(c);

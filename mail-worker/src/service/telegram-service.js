@@ -126,7 +126,7 @@ const telegramService = {
 			return { okCount: 0, failCount: tgChatIds.length || 1, errors: [] };
 		}
 
-		const jwtToken = await jwtUtils.generateToken(c, { emailId: email.emailId })
+		const jwtToken = await jwtUtils.generateToken(c, { emailId: email.emailId }, 600)
 		const inlineKeyboard = [];
 
 		if (customDomain) {

@@ -1,35 +1,30 @@
+import { sanitizeEmailText } from '../security/email-sanitizer';
+
 export default function emailTextTemplate(text) {
 	return `<!DOCTYPE html>
-<html lang='en' >
+<html lang="zh-CN">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        html {
+        html, body {
+            box-sizing: border-box;
             margin: 0;
-            padding: 0;
-            background: #FFF;
-        }
-
-        body {
-        		box-sizing: border-box;
-        		margin: 0;
-        		padding: 10px 10px;
+            padding: 10px;
             width: 100%;
-            height: 100%;
-            overflow: auto; /* 改为 auto 允许滚动 */
+            min-height: 100%;
+            overflow: auto;
+            background: #fff;
         }
-
         span {
-        		font-family: inherit;
-						white-space: pre-wrap;
-						word-break: break-word;
+            font-family: inherit;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-
     </style>
 </head>
 <body>
-<span>${text}</span>
+<span>${sanitizeEmailText(text)}</span>
 </body>
-</html>`
+</html>`;
 }

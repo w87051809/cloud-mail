@@ -1,0 +1,150 @@
+<svg width="1920" height="960" viewBox="0 0 1920 960" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">1089邮箱首页封面</title>
+  <desc id="desc">1089邮箱登录页封面，包含收件箱界面、邮件图标和中文邮箱功能信息。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FBFF"/>
+      <stop offset="0.44" stop-color="#EAF7F5"/>
+      <stop offset="1" stop-color="#F7F0E7"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="236" y1="170" x2="1058" y2="774" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F2F7FA"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="151" y1="150" x2="660" y2="770" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="0.55" stop-color="#0EA5A4"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="envelope" x1="355" y1="365" x2="736" y2="627" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2F6CF6"/>
+      <stop offset="1" stop-color="#10B5A6"/>
+    </linearGradient>
+    <linearGradient id="safe" x1="1308" y1="0" x2="1920" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.68"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="softShadow" x="150" y="105" width="1010" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="24"/>
+      <feGaussianBlur stdDeviation="32"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 0 0.23 0 0 0 0.16 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+    <filter id="cardShadow" x="0" y="0" width="160%" height="170%" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324D" flood-opacity="0.12"/>
+    </filter>
+    <clipPath id="panelClip">
+      <rect x="220" y="148" width="898" height="660" rx="34"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1920" height="960" fill="url(#bg)"/>
+
+  <path d="M0 732C196 683 311 752 504 700C690 650 815 527 1014 560C1217 593 1312 742 1510 719C1671 700 1793 582 1920 604V960H0V732Z" fill="#FFFFFF" opacity="0.66"/>
+  <path d="M0 628C189 590 322 635 492 586C656 538 782 427 962 463C1168 504 1282 621 1474 594C1644 570 1764 474 1920 501" stroke="#8DD4C8" stroke-width="2" opacity="0.48"/>
+  <path d="M0 674C223 627 348 709 535 650C696 599 801 511 996 533C1190 555 1307 676 1492 650C1661 626 1764 543 1920 568" stroke="#F6B35B" stroke-width="2" opacity="0.35"/>
+
+  <rect x="1308" y="0" width="612" height="960" fill="url(#safe)"/>
+  <path d="M1330 146H1814" stroke="#DDE9EF" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M1390 216H1760" stroke="#E7EEF2" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M1364 756H1792" stroke="#E6ECEF" stroke-width="1.5" stroke-linecap="round"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="220" y="148" width="898" height="660" rx="34" fill="url(#panel)"/>
+    <rect x="220" y="148" width="898" height="660" rx="34" stroke="#FFFFFF" stroke-width="2"/>
+  </g>
+
+  <g clip-path="url(#panelClip)">
+    <rect x="220" y="148" width="898" height="74" fill="#FFFFFF"/>
+    <circle cx="267" cy="185" r="9" fill="#F87171"/>
+    <circle cx="300" cy="185" r="9" fill="#FBBF24"/>
+    <circle cx="333" cy="185" r="9" fill="#34D399"/>
+    <rect x="382" y="172" width="362" height="26" rx="13" fill="#EDF4F8"/>
+    <text x="412" y="191" fill="#527087" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600">mail.1089.ltd</text>
+    <rect x="784" y="172" width="124" height="26" rx="13" fill="#E2F3EF"/>
+    <text x="814" y="191" fill="#0F766E" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" font-weight="700">安全连接</text>
+    <rect x="944" y="172" width="106" height="26" rx="13" fill="#F6EAD9"/>
+    <text x="969" y="191" fill="#B45309" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" font-weight="700">运行正常</text>
+
+    <rect x="262" y="256" width="248" height="488" rx="28" fill="#12324C"/>
+    <text x="291" y="316" fill="#FFFFFF" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="24" font-weight="800">1089邮箱</text>
+    <rect x="282" y="334" width="200" height="48" rx="14" fill="#214A67"/>
+    <circle cx="305" cy="358" r="6" fill="#70D1C2"/>
+    <text x="323" y="366" fill="#FFFFFF" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="18" font-weight="700">收件箱</text>
+    <circle cx="305" cy="407" r="6" fill="#4A7BF2"/>
+    <text x="323" y="415" fill="#D7E6F2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="17" font-weight="600">已发送</text>
+    <circle cx="305" cy="451" r="6" fill="#F4B45E"/>
+    <text x="323" y="459" fill="#D7E6F2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="17" font-weight="600">草稿箱</text>
+    <path d="M291 485H467" stroke="#34556D" stroke-width="2" stroke-linecap="round"/>
+    <text x="291" y="526" fill="#D7E6F2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="16" font-weight="600">重要邮件</text>
+    <text x="291" y="566" fill="#B9CDDA" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="16" font-weight="600">垃圾邮件</text>
+    <text x="291" y="606" fill="#91AAB9" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="16" font-weight="600">回收站</text>
+    <rect x="291" y="647" width="154" height="42" rx="21" fill="#FFFFFF"/>
+    <text x="337" y="675" fill="#2563EB" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="18" font-weight="800">写邮件</text>
+
+    <rect x="553" y="270" width="506" height="94" rx="24" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <circle cx="606" cy="317" r="23" fill="#DCEBFF"/>
+    <path d="M594 315L605 325L622 306" stroke="#2563EB" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="649" y="310" fill="#203447" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="21" font-weight="800">欢迎使用1089邮箱</text>
+    <text x="649" y="339" fill="#7890A2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600">您的专属邮箱已经准备好了</text>
+    <rect x="974" y="297" width="44" height="44" rx="14" fill="#E7F7F2"/>
+    <path d="M987 320H1005" stroke="#10A795" stroke-width="4" stroke-linecap="round"/>
+
+    <rect x="553" y="398" width="506" height="94" rx="24" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <circle cx="606" cy="445" r="23" fill="#FDECCB"/>
+    <path d="M592 443H620M592 454H610" stroke="#D97706" stroke-width="5" stroke-linecap="round"/>
+    <text x="649" y="438" fill="#203447" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="21" font-weight="800">账号安全提醒</text>
+    <text x="649" y="467" fill="#7890A2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600">登录信息已通过安全验证</text>
+    <rect x="974" y="425" width="44" height="44" rx="14" fill="#EEF2FF"/>
+    <path d="M989 447H1003M996 440V454" stroke="#4F6CF5" stroke-width="4" stroke-linecap="round"/>
+
+    <rect x="553" y="526" width="506" height="94" rx="24" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <circle cx="606" cy="573" r="23" fill="#DCFCE7"/>
+    <path d="M591 574L601 584L622 562" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="649" y="566" fill="#203447" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="21" font-weight="800">邮件投递成功</text>
+    <text x="649" y="595" fill="#7890A2" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600">邮件已安全送达收件箱</text>
+    <rect x="974" y="553" width="44" height="44" rx="14" fill="#FFF1E8"/>
+    <path d="M987 575H1005" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
+
+    <rect x="553" y="654" width="238" height="58" rx="20" fill="#EAF4FF"/>
+    <rect x="826" y="654" width="233" height="58" rx="20" fill="#EAF8F5"/>
+    <text x="586" y="690" fill="#2563EB" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="18" font-weight="800">今天的您依旧优秀</text>
+    <text x="850" y="690" fill="#0F8F84" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="16" font-weight="800">好运和好消息都在路上</text>
+  </g>
+
+  <g>
+    <path d="M454 356C474 325 518 325 538 356L702 612C723 645 699 688 660 688H332C293 688 269 645 290 612L454 356Z" fill="url(#brand)" opacity="0.14"/>
+    <rect x="338" y="380" width="430" height="282" rx="40" fill="url(#envelope)" filter="url(#cardShadow)"/>
+    <path d="M374 428L530 543C544 553 563 553 577 543L733 428" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M374 620L506 519M733 620L601 519" stroke="#C6FFF3" stroke-width="18" stroke-linecap="round"/>
+    <rect x="411" y="435" width="285" height="170" rx="28" fill="#FFFFFF" opacity="0.16"/>
+    <rect x="558" y="582" width="174" height="46" rx="23" fill="#FFFFFF" opacity="0.94"/>
+    <text x="582" y="612" fill="#0F766E" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="18" font-weight="800">@1089.ltd</text>
+  </g>
+
+  <g>
+    <rect x="112" y="46" width="108" height="84" rx="26" fill="#FFFFFF" opacity="0.88"/>
+    <text x="128" y="100" fill="#0EA5A4" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="900">1089</text>
+    <text x="246" y="100" fill="#102A43" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="68" font-weight="900">1089邮箱</text>
+    <text x="250" y="136" fill="#3E596D" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="23" font-weight="600">专属域名邮箱 · 安全稳定收发</text>
+  </g>
+
+  <g opacity="0.64">
+    <path d="M1094 300C1170 269 1234 279 1288 330C1334 373 1389 382 1450 350" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1110 676C1198 632 1265 644 1311 700C1359 758 1422 760 1496 707" stroke="#0EA5A4" stroke-width="4" stroke-linecap="round"/>
+    <path d="M956 106C1017 88 1069 99 1114 138C1155 174 1203 179 1258 151" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.9">
+    <circle cx="1188" cy="308" r="7" fill="#2563EB"/>
+    <circle cx="1324" cy="374" r="7" fill="#2563EB"/>
+    <circle cx="1228" cy="640" r="7" fill="#0EA5A4"/>
+    <circle cx="1356" cy="758" r="7" fill="#0EA5A4"/>
+    <circle cx="1052" cy="95" r="7" fill="#F59E0B"/>
+    <circle cx="1178" cy="177" r="7" fill="#F59E0B"/>
+  </g>
+</svg>

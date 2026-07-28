@@ -9,12 +9,12 @@ import i18n from "@/i18n/index.js";
 
 export async function init() {
     document.title = '\u200B'
+    localStorage.removeItem('token')
 
     const settingStore = useSettingStore();
     const userStore = useUserStore();
     const accountStore = useAccountStore();
 
-    const token = localStorage.getItem('token');
     if (!settingStore.lang) {
         let lang = navigator.language.split('-')[0]
         lang = lang === 'zh' ? lang : 'en'
@@ -23,35 +23,24 @@ export async function init() {
 
     i18n.global.locale.value = settingStore.lang
 
-    let setting = null;
+    const userPromise = loginUserInfo(true).catch(() => null)
+    const [setting, user] = await Promise.all([websiteConfig(), userPromise])
 
-    if (token) {
-        const userPromise = loginUserInfo().catch(e => {
-            console.error(e);
-            return null;
-        });
+    settingStore.settings = setting
+    settingStore.domainList = setting.domainList
+    document.title = setting.title
 
-        const [s, user] = await Promise.all([websiteConfig(), userPromise]);
-        setting = s;
-        settingStore.settings = setting;
-        settingStore.domainList = setting.domainList;
-        document.title = setting.title;
-
-        if (user) {
-            accountStore.currentAccountId = user.account.accountId;
-            accountStore.currentAccount = user.account;
-            userStore.user = user;
-
-            const routers = permsToRouter(user.permKeys);
-            routers.forEach(routerData => {
-                router.addRoute('layout', routerData);
-            });
-        }
-
-    } else {
-        setting = await websiteConfig();
-        settingStore.settings = setting;
-        settingStore.domainList = setting.domainList;
-        document.title = setting.title;
+    if (!user) {
+        userStore.user = {}
+        return
     }
+
+    accountStore.currentAccountId = user.account.accountId
+    accountStore.currentAccount = user.account
+    userStore.user = user
+
+    const routers = permsToRouter(user.permKeys)
+    routers.forEach(routerData => {
+        router.addRoute('layout', routerData)
+    })
 }

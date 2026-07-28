@@ -16,6 +16,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {computed, onBeforeUnmount, onMounted, watch} from "vue";
 import { useRoute } from 'vue-router'
 import { hasPerm } from "@/perm/perm.js"
+import DOMPurify from 'dompurify'
 
 const settingStore = useSettingStore()
 const uiStore = useUiStore();
@@ -60,18 +61,23 @@ function showNotice(data) {
     elNotification.close()
   }
 
+  const width = Math.min(900, Math.max(240, Number(data.noticeWidth) || 420))
   const style = document.createElement('style');
   style.innerHTML = `
   .custom-notice.el-notification {
-    --el-notification-width: min(${data.noticeWidth}px,calc(100% - 30px)) !important;
+    --el-notification-width: min(${width}px,calc(100% - 30px)) !important;
   }
   `;
 
   document.head.appendChild(style);
+  const noticeContent = DOMPurify.sanitize(data.noticeContent || '', {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'ul', 'ol', 'li'],
+    ALLOWED_ATTR: ['href', 'title', 'target', 'rel']
+  })
 
   elNotification = ElNotification({
     title: data.noticeTitle,
-    message: `<div style="width: 100%;height: 100%;">${data.noticeContent}</div>`,
+    message: `<div style="width: 100%;height: 100%;">${noticeContent}</div>`,
     type: data.noticeType === 'none' ? '' : data.noticeType,
     duration: data.noticeDuration,
     position: data.noticePosition,

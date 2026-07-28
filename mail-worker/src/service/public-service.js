@@ -14,6 +14,7 @@ import { isDel, roleConst } from '../const/entity-const';
 import email from '../entity/email';
 import userService from './user-service';
 import KvConst from '../const/kv-const';
+import authRateLimiter from '../security/auth-rate-limiter';
 
 const publicService = {
 
@@ -174,20 +175,21 @@ const publicService = {
 	async verifyUser(c, params) {
 
 		const { email, password } = params
+		await authRateLimiter.assertLoginAllowed(c, email);
 
 		const userRow = await userService.selectByEmailIncludeDel(c, email);
 
-		if (email !== c.env.admin) {
-			throw new BizError(t('notAdmin'));
+		const valid = email === c.env.admin
+			&& userRow
+			&& userRow.isDel !== isDel.DELETE
+			&& await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password);
+
+		if (!valid) {
+			await authRateLimiter.recordLoginFailure(c, email);
+			throw new BizError(t('authFailed'), 401);
 		}
 
-		if (!userRow || userRow.isDel === isDel.DELETE) {
-			throw new BizError(t('notExistUser'));
-		}
-
-		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password)) {
-			throw new BizError(t('IncorrectPwd'));
-		}
+		await authRateLimiter.clearLoginFailures(c, email);
 	}
 
 }

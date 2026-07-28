@@ -1,7 +1,7 @@
 import http from '@/axios/index.js';
 
-export function loginUserInfo() {
-    return http.get('/my/loginUserInfo')
+export function loginUserInfo(silent = false) {
+    return http.get('/my/loginUserInfo', {noMsg: silent})
 }
 
 export function resetPassword(password) {

@@ -65,17 +65,21 @@ const cryptoUtils = {
 	async verifyPassword(inputPassword, salt, storedHash) {
 		if (!storedHash || !salt || typeof inputPassword !== 'string') return false;
 
-		if (storedHash.startsWith(`${PBKDF2_PREFIX}$`)) {
-			const [, iterationValue, expectedHash] = storedHash.split('$');
-			const iterations = Number(iterationValue);
-			if (!Number.isSafeInteger(iterations) || iterations < 100_000 || !expectedHash) return false;
+		try {
+			if (storedHash.startsWith(`${PBKDF2_PREFIX}$`)) {
+				const [, iterationValue, expectedHash] = storedHash.split('$');
+				const iterations = Number(iterationValue);
+				if (!Number.isSafeInteger(iterations) || iterations < 100_000 || !expectedHash) return false;
 
-			const actualHash = await this.derivePassword(inputPassword, salt, iterations);
-			return constantTimeEqual(base64ToBytes(actualHash), base64ToBytes(expectedHash));
+				const actualHash = await this.derivePassword(inputPassword, salt, iterations);
+				return constantTimeEqual(base64ToBytes(actualHash), base64ToBytes(expectedHash));
+			}
+
+			const legacyHash = await this.legacyHashPassword(inputPassword, salt);
+			return constantTimeEqual(base64ToBytes(legacyHash), base64ToBytes(storedHash));
+		} catch {
+			return false;
 		}
-
-		const legacyHash = await this.legacyHashPassword(inputPassword, salt);
-		return constantTimeEqual(base64ToBytes(legacyHash), base64ToBytes(storedHash));
 	},
 
 	needsPasswordUpgrade(storedHash) {

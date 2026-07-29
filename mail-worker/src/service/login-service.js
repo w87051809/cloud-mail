@@ -232,10 +232,14 @@ const loginService = {
 
 			await authRateLimiter.clearLoginFailures(c, email);
 			if (cryptoUtils.needsPasswordUpgrade(userRow.password)) {
-				const upgraded = await cryptoUtils.hashPassword(password);
-				await userService.updatePasswordHash(c, userRow.userId, upgraded);
-				userRow.password = upgraded.hash;
-				userRow.salt = upgraded.salt;
+				try {
+					const upgraded = await cryptoUtils.hashPassword(password);
+					await userService.updatePasswordHash(c, userRow.userId, upgraded);
+					userRow.password = upgraded.hash;
+					userRow.salt = upgraded.salt;
+				} catch (error) {
+					console.error('Password hash upgrade deferred', error);
+				}
 			}
 		} else if (!userRow || userRow.isDel === isDel.DELETE || userRow.status === userConst.status.BAN) {
 			throw new BizError(t('authFailed'), 401);
